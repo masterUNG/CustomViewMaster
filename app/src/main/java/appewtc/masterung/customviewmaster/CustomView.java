@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -16,25 +18,32 @@ import android.view.View;
 public class CustomView extends View{
 
     private boolean isBlue = false;
+    private boolean isDown = false;
 
     public CustomView(Context context) {
         super(context);
         init();
     }
 
-    public CustomView(Context context, @Nullable AttributeSet attrs) {
+    public CustomView(Context context,
+                      @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
         initWithAttrs(attrs, 0, 0);
     }
 
-    public CustomView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public CustomView(Context context,
+                      @Nullable AttributeSet attrs,
+                      int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
         initWithAttrs(attrs, defStyleAttr, 0);
     }
 
-    public CustomView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public CustomView(Context context,
+                      @Nullable AttributeSet attrs,
+                      int defStyleAttr,
+                      int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init();
         initWithAttrs(attrs, defStyleAttr, defStyleAttr);
@@ -46,7 +55,8 @@ public class CustomView extends View{
     private void initWithAttrs(AttributeSet attributeSet,
                                int defStyleAttr,
                                int defStyleRss) {
-        TypedArray typedArray = getContext().getTheme().obtainStyledAttributes(attributeSet,
+        TypedArray typedArray = getContext().getTheme()
+                .obtainStyledAttributes(attributeSet,
                 R.styleable.CustomView, defStyleAttr, defStyleRss);
 
         try {
@@ -65,13 +75,60 @@ public class CustomView extends View{
 
         Paint paint = new Paint();
 
+        //For isBlue
         if (isBlue) {
             paint.setColor(Color.BLUE);
         } else {
             paint.setColor(Color.RED);
         }
 
-        canvas.drawLine(0, 0, getMeasuredWidth(), getMeasuredHeight(), paint);
+        //For isDown
+        if (isDown) {
+            paint.setColor(Color.MAGENTA);
 
+            //Convent dp to px
+            float vPx = conventDpToPx();
+            paint.setStrokeWidth(vPx);
+
+            canvas.drawLine(0, getMeasuredHeight(),
+                    getMeasuredWidth(), 0, paint);
+
+        }
+
+        canvas.drawLine(0, 0,
+                getMeasuredWidth(), getMeasuredHeight(),
+                paint);
+
+    }   // onDraw
+
+    private float conventDpToPx() {
+        float vPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                5,
+                getContext().getResources().getDisplayMetrics());
+        return vPx;
     }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                isDown = true;
+                invalidate();
+                return true;
+            case MotionEvent.ACTION_MOVE:
+                break;
+            case MotionEvent.ACTION_UP:
+                isDown = false;
+                invalidate();
+                return true;
+            case MotionEvent.ACTION_CANCEL:
+                isDown = false;
+                invalidate();
+                return true;
+        }
+
+        return super.onTouchEvent(event);
+    }   // onTouchEvent
+
 }   // Main Class
